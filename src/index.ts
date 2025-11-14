@@ -407,6 +407,7 @@ const runWorkbookUpdate = async (filePath: string) => {
             content;
           mutated = true;
           filled += 1;
+          await workbook.xlsx.writeFile(filePath);
         }
       } catch (error) {
         failed += 1;
