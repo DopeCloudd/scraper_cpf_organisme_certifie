@@ -16,6 +16,7 @@ const CONTENT_LOAD_DELAY_MS = Number(process.env.CONTENT_LOAD_DELAY_MS ?? 2000);
 const BETWEEN_DELAY_MS = Number(process.env.BETWEEN_DELAY_MS ?? 500);
 const HEADLESS =
   (process.env.PUPPETEER_HEADLESS ?? "false").toLowerCase() === "true";
+const WINDOWS = process.platform === "win32";
 
 interface CliOptions {
   file?: string;
@@ -250,8 +251,9 @@ const DEFAULT_BROWSER_ARGS = [
 const createBrowser = async (): Promise<Browser> => {
   return puppeteer.launch({
     headless: HEADLESS ? "new" : false,
-    executablePath:
-      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    executablePath: WINDOWS
+      ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+      : "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     defaultViewport: { width: 1366, height: 768 },
     args: DEFAULT_BROWSER_ARGS,
   });
@@ -337,9 +339,7 @@ const extractContentFromPage = async (
         ) ?? heading.parentElement;
       if (!container) return undefined;
 
-      const htmlPieces = Array.from(
-        container.querySelectorAll("p, ul, ol, li")
-      )
+      const htmlPieces = Array.from(container.querySelectorAll("p, ul, ol, li"))
         .map((node) => node.outerHTML?.trim())
         .filter((snippet): snippet is string => Boolean(snippet));
 
