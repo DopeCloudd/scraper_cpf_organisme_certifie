@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "extract": "ts-node src/index.ts",
+    "split": "ts-node src/splitWorkbook.ts",
     "lint": "eslint \"src/**/*.ts\"",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "ts-node src/test.ts"

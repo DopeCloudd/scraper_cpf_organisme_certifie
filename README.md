@@ -32,3 +32,19 @@ BETWEEN_DELAY_MS=500          # pause entre deux fiches
 ```
 
 Les logs sont écrits dans `logs/` (via Winston) ainsi qu’en console lorsque `NODE_ENV` ≠ production.
+
+## Découpage d’un export volumineux
+
+Lorsque le fichier `.xlsx` issu de MonCompteFormation devient trop lourd, utilisez l’utilitaire de découpe pour réduire sa taille sans perdre le lien entre les feuilles `Centres` et `Formations` :
+
+```bash
+npm run split -- --file=input/export_cpf.xlsx --max-centres=1000 --output-dir=output/split
+```
+
+- `--file` / `-f` : fichier source (par défaut le dernier `.xlsx` trouvé dans `input/`).
+- `--max-centres` / `-c` : nombre maximal de centres par fichier (1000 par défaut).
+- `--max-formations` / `-m` : limite additionnelle sur le nombre de formations.
+- `--output-dir` / `-o` : dossier de sortie (défaut `./output`).
+- `--prefix` / `-p` : préfixe des fichiers générés (`<nom_source>_part-XX.xlsx` par défaut).
+
+Chaque fichier généré contient uniquement les centres sélectionnés et toutes les formations associées, plus un onglet `Résumé` avec les compteurs principaux pour cette partie.
