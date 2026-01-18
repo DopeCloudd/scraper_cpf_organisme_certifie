@@ -13,7 +13,7 @@ Petit utilitaire qui lit un fichier Excel exporté de MonCompteFormation, ouvre 
    ```bash
    npm run extract -- --file=input/mon_fichier.xlsx
    ```
-   Sans option `--file`, le script prend automatiquement le fichier `.xlsx` le plus récent présent dans `input/`.
+   Sans option `--file`, le script traite tous les fichiers `.xlsx` présents dans `input/`.
 3. Le script lance Chrome (visible par défaut), visite chaque lien, récupère le bloc HTML « Contenu » (balises `p`, `ul`, `li`, etc.) et remplit la colonne correspondante.  
    Les lignes où la cellule « Contenu » est déjà remplie sont automatiquement ignorées.
 

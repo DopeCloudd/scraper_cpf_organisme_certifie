@@ -71,30 +71,24 @@ const showHelp = () => {
   console.log(`Usage: npm run extract [-- --file=<chemin>]
 
 Options:
-  -f, --file <p>   Chemin vers le fichier Excel (par défaut: dernier .xlsx dans input/).
+  -f, --file <p>   Chemin vers le fichier Excel (par défaut: tous les .xlsx dans input/).
   -h, --help       Affiche cette aide.
 `);
 };
 
-const resolveInputFile = async (explicit?: string): Promise<string> => {
+const resolveInputFiles = async (explicit?: string): Promise<string[]> => {
   if (explicit) {
     const candidate = path.resolve(process.cwd(), explicit);
     await fs.access(candidate);
-    return candidate;
+    return [candidate];
   }
 
   const entries = await fs.readdir(INPUT_DIR, { withFileTypes: true });
-  const excelFiles = await Promise.all(
-    entries
-      .filter(
-        (entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".xlsx")
-      )
-      .map(async (entry) => {
-        const fullPath = path.join(INPUT_DIR, entry.name);
-        const stats = await fs.stat(fullPath);
-        return { path: fullPath, mtime: stats.mtimeMs };
-      })
-  );
+  const excelFiles = entries
+    .filter(
+      (entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".xlsx")
+    )
+    .map((entry) => path.join(INPUT_DIR, entry.name));
 
   if (excelFiles.length === 0) {
     throw new Error(
@@ -102,8 +96,8 @@ const resolveInputFile = async (explicit?: string): Promise<string> => {
     );
   }
 
-  excelFiles.sort((a, b) => b.mtime - a.mtime);
-  return excelFiles[0].path;
+  excelFiles.sort((a, b) => a.localeCompare(b));
+  return excelFiles;
 };
 
 const getCellText = (
@@ -451,8 +445,23 @@ const main = async () => {
     return;
   }
 
-  const filePath = await resolveInputFile(options.file);
-  await runWorkbookUpdate(filePath);
+  const filePaths = await resolveInputFiles(options.file);
+  let hasError = false;
+  for (const filePath of filePaths) {
+    try {
+      await runWorkbookUpdate(filePath);
+    } catch (error) {
+      hasError = true;
+      logger.error(
+        "Erreur lors du traitement du fichier %s: %s",
+        filePath,
+        error instanceof Error ? error.message : String(error)
+      );
+    }
+  }
+  if (hasError) {
+    process.exitCode = 1;
+  }
 };
 
 main().catch((error) => {
